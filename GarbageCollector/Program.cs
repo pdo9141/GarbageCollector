@@ -13,10 +13,60 @@ namespace GarbageCollector
             GC.WaitForPendingFinalizers();
             GC.Collect();
 
+            TestReadWriteFile();
+
+            /*
             TestLargeObjectHeap();
             TestReadLargeFileInGC();
             TestWeakReference();
             TestGenerationOfObject();
+            */
+        }
+
+        private static void TestReadWriteFile()
+        {
+            long bytes = GC.GetTotalMemory(false);
+            string filePath = @"C:\temp\input.pdf";
+            string outputfilePath = String.Format(@"C:\temp\output-{0}.pdf", Guid.NewGuid());
+
+            Console.WriteLine("TotalMemory: {0}", bytes);
+
+            //byte[] data = File.ReadAllBytes(filePath);
+            //File.Copy(filePath, outputfilePath);
+
+            const int chunkSize = 1024; // read the file by chunks of 1KB
+            using (var file = File.OpenRead(filePath))
+            {
+                int bytesRead;
+                var buffer = new byte[chunkSize];
+
+                using (var fs = File.Create(outputfilePath))
+                {
+                    while ((bytesRead = file.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        fs.Write(buffer, 0, bytesRead);
+                    }
+                }
+            }
+
+            /*
+            int MAX_BUFFER = 1024;
+            byte[] Buffer = new byte[MAX_BUFFER];
+            int bytesRead;
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                while ((bytesRead = fileStream.Read(Buffer, 0, MAX_BUFFER)) != 0)
+                {
+                    // Process this chunk starting from offset 0 
+                    // and continuing for bytesRead bytes!
+                }
+            }
+            */
+
+            long bytes1 = GC.GetTotalMemory(false);
+            Console.WriteLine("TotalMemory: {0}", bytes1);
+            Console.WriteLine("TotalMemory Difference: {0}", bytes1 - bytes);
+            Console.ReadLine();
         }
 
         private static void TestLargeObjectHeap()
