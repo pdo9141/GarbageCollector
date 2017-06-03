@@ -13,14 +13,11 @@ namespace GarbageCollector
             GC.WaitForPendingFinalizers();
             GC.Collect();
 
-            TestReadWriteFile();
-
-            /*
-            TestLargeObjectHeap();
-            TestReadLargeFileInGC();
+            //TestReadWriteFile();
+            //TestLargeObjectHeap();
+            //TestReadLargeFileInGC();
             TestWeakReference();
-            TestGenerationOfObject();
-            */
+            //TestGenerationOfObject();           
         }
 
         private static void TestReadWriteFile()
@@ -135,12 +132,31 @@ namespace GarbageCollector
             Dog dog = new Dog("Bowser", 5, MB);
 
             WeakReference dogRef = new WeakReference(dog);
-            Console.WriteLine(dogRef.IsAlive);
+            Console.WriteLine("Weak Dog Reference status: {0}", dogRef.IsAlive);
 
             dog = null;
-            GC.Collect();
 
-            Console.WriteLine(dogRef.IsAlive);
+            Random Rand = new Random();
+            int result = Rand.Next(0, 2);
+
+            if (result == 1)
+            {
+                GC.Collect();
+                Console.WriteLine("GC Collected");
+            }
+
+            Dog myDog = null;
+            if (dogRef.IsAlive)
+            {
+                myDog = dogRef.Target as Dog;
+                Console.WriteLine("Retrieved dog from weak reference");
+            }
+            else
+            {
+                myDog = new Dog("Bowser", 5, MB);
+                Console.WriteLine("Created new dog, GC already collected");
+            }
+
             Console.ReadLine();
         }
 
@@ -187,8 +203,8 @@ namespace GarbageCollector
         {
             Name = name;
             Age = age;
-            //_data = new byte[size];
-            _data = File.ReadAllBytes(@"C:\temp\TestLarge.doc");
+            _data = new byte[size];
+            //_data = File.ReadAllBytes(@"C:\temp\TestLarge.doc");
         }
 
         public void Bark()
